@@ -44,6 +44,8 @@
 static int le_ftpbuf;
 #define le_ftpbuf_name "FTP Buffer"
 
+static zend_class_entry *ftp_ce_ptr;
+
 /* {{{ arginfo */
 ZEND_BEGIN_ARG_INFO_EX(arginfo_ftp_connect, 0, 0, 1)
 	ZEND_ARG_INFO(0, host)
@@ -305,8 +307,17 @@ static void ftp_destructor_ftpbuf(zend_resource *rsrc TSRMLS_DC)
 	ftp_close(ftp);
 }
 
+static zend_function_entry php_ftp_class_functions[] = {
+//    PHP_ME(FTP, __construct, arginfo_ftp_connect, ZEND_ACC_PUBLIC)
+    PHP_FALIAS(connect, ftp_connect, arginfo_ftp_connect)
+
+    {NULL, NULL, NULL}
+};
+
 PHP_MINIT_FUNCTION(ftp)
 {
+	zend_class_entry ce;
+    
 	le_ftpbuf = zend_register_list_destructors_ex(ftp_destructor_ftpbuf, NULL, le_ftpbuf_name, module_number);
 	REGISTER_LONG_CONSTANT("FTP_ASCII",  FTPTYPE_ASCII, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("FTP_TEXT",   FTPTYPE_ASCII, CONST_PERSISTENT | CONST_CS);
@@ -318,6 +329,10 @@ PHP_MINIT_FUNCTION(ftp)
 	REGISTER_LONG_CONSTANT("FTP_FAILED", PHP_FTP_FAILED, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("FTP_FINISHED", PHP_FTP_FINISHED, CONST_PERSISTENT | CONST_CS);
 	REGISTER_LONG_CONSTANT("FTP_MOREDATA", PHP_FTP_MOREDATA, CONST_PERSISTENT | CONST_CS);
+    
+	INIT_CLASS_ENTRY(ce, "FTP", php_ftp_class_functions);
+	ftp_ce_ptr = zend_register_internal_class(&ce TSRMLS_CC);
+    
 	return SUCCESS;
 }
 
@@ -1437,6 +1452,15 @@ PHP_FUNCTION(ftp_get_option)
 			break;
 	}
 }
+/* }}} */
+
+/* {{{ proto FTP::__construct()
+ Creates new FTP object
+ */
+//PHP_METHOD(FTP, __construct)
+//{
+//    
+//}
 /* }}} */
 
 #endif /* HAVE_FTP */

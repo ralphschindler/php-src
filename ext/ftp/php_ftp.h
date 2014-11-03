@@ -70,6 +70,9 @@ PHP_FUNCTION(ftp_nb_put);
 PHP_FUNCTION(ftp_nb_fput);
 PHP_FUNCTION(ftp_nb_continue);
 
+/* OO Interface */
+PHP_METHOD(FTP, __construct);
+
 #define phpext_ftp_ptr php_ftp_module_ptr
 
 #else

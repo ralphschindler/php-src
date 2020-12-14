@@ -15,7 +15,7 @@ $y = 0;
 
 for ($j = 0; $j < 10; $j++) {
     for ($k = 0; $k < 10; $k++) {
-        continue if ($j >= 5): 2;
+        continue 2 if ($j >= 5);
         
         $y++;
     }

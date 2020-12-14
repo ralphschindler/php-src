@@ -250,7 +250,7 @@ static YYSIZE_T zend_yytnamerr(char*, const char*);
 %type <ast> alt_if_stmt for_exprs switch_case_list global_var_list static_var_list
 %type <ast> echo_expr_list unset_variables catch_name_list catch_list parameter_list class_statement_list
 %type <ast> implements_list case_list
-%type <ast> break_if_stmt continue_if_stmt return_if_stmt guard_if_optional_return if_stmt_without_else
+%type <ast> continue_stmt break_stmt return_stmt if_stmt_without_else
 %type <ast> non_empty_parameter_list argument_list non_empty_argument_list property_list
 %type <ast> class_const_list class_const_decl class_name_list trait_adaptations method_body non_empty_for_exprs
 %type <ast> ctor_arguments alt_if_stmt_without_else trait_adaptation_list lexical_vars
@@ -429,9 +429,6 @@ inner_statement:
 statement:
 		'{' inner_statement_list '}' { $$ = $2; }
 	|	if_stmt { $$ = $1; }
-	|	continue_if_stmt { $$ = $1; }
-	|	break_if_stmt { $$ = $1; }
-	|	return_if_stmt { $$ = $1; }
 	|	alt_if_stmt { $$ = $1; }
 	|	T_WHILE '(' expr ')' while_statement
 			{ $$ = zend_ast_create(ZEND_AST_WHILE, $3, $5); }
@@ -441,9 +438,11 @@ statement:
 			{ $$ = zend_ast_create(ZEND_AST_FOR, $3, $5, $7, $9); }
 	|	T_SWITCH '(' expr ')' switch_case_list
 			{ $$ = zend_ast_create(ZEND_AST_SWITCH, $3, $5); }
-	|	T_BREAK optional_expr ';'		{ $$ = zend_ast_create(ZEND_AST_BREAK, $2); }
-	|	T_CONTINUE optional_expr ';'	{ $$ = zend_ast_create(ZEND_AST_CONTINUE, $2); }
-	|	T_RETURN optional_expr ';'		{ $$ = zend_ast_create(ZEND_AST_RETURN, $2); }
+	|	return_stmt { $$ = $1; }
+	|	break_stmt	{ $$ = $1; }
+	|	continue_stmt	{ $$ = $1; }
+// T_BREAK optional_expr ';'		{ $$ = zend_ast_create(ZEND_AST_BREAK, $2); }
+//	|	T_CONTINUE optional_expr ';'	{ $$ = zend_ast_create(ZEND_AST_CONTINUE, $2); }
 	|	T_GLOBAL global_var_list ';'	{ $$ = $2; }
 	|	T_STATIC static_var_list ';'	{ $$ = $2; }
 	|	T_ECHO echo_expr_list ';'		{ $$ = $2; }
@@ -604,30 +603,28 @@ while_statement:
 	|	':' inner_statement_list T_ENDWHILE ';' { $$ = $2; }
 ;
 
-break_if_stmt:
-		T_BREAK T_IF '(' expr ')' guard_if_optional_return
+return_stmt:
+		T_RETURN optional_expr T_IF '(' expr ')' ';'
 			{ $$ = zend_ast_create_list(2, ZEND_AST_IF,
-				zend_ast_create(ZEND_AST_IF_ELEM, $4,
-				zend_ast_create(ZEND_AST_BREAK, $6))); }
+				zend_ast_create(ZEND_AST_IF_ELEM, $5,
+				zend_ast_create(ZEND_AST_RETURN, $2))); }
+	|	T_RETURN optional_expr ';' { $$ = zend_ast_create(ZEND_AST_RETURN, $2); }
 ;
 
-continue_if_stmt:
-		T_CONTINUE T_IF '(' expr ')' guard_if_optional_return
+continue_stmt:
+		T_CONTINUE optional_expr T_IF '(' expr ')' ';'
 			{ $$ = zend_ast_create_list(2, ZEND_AST_IF,
-				zend_ast_create(ZEND_AST_IF_ELEM, $4,
-				zend_ast_create(ZEND_AST_CONTINUE, $6))); }
+				zend_ast_create(ZEND_AST_IF_ELEM, $5,
+				zend_ast_create(ZEND_AST_CONTINUE, $2))); }
+	|	T_CONTINUE optional_expr ';' { $$ = zend_ast_create(ZEND_AST_CONTINUE, $2); }
 ;
 
-return_if_stmt:
-		T_RETURN T_IF '(' expr ')' guard_if_optional_return
+break_stmt:
+		T_BREAK optional_expr T_IF '(' expr ')' ';'
 			{ $$ = zend_ast_create_list(2, ZEND_AST_IF,
-				zend_ast_create(ZEND_AST_IF_ELEM, $4,
-				zend_ast_create(ZEND_AST_RETURN, $6))); }
-;
-
-guard_if_optional_return:
-		':' optional_expr ';' { $$ = $2; }
-	|	';' { $$ = NULL; }
+				zend_ast_create(ZEND_AST_IF_ELEM, $5,
+				zend_ast_create(ZEND_AST_BREAK, $2))); }
+	|	T_BREAK optional_expr ';' { $$ = zend_ast_create(ZEND_AST_BREAK, $2); }
 ;
 
 if_stmt_without_else:

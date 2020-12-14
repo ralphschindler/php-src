@@ -15,7 +15,7 @@ $y = 0;
 
 for ($j = 0; $j < 10; $j++) {
     for ($k = 0; $k < 10; $k++) {
-        break if ($j >= 5): 2;
+        break 2 if ($j >= 5);
         
         $y++;
     }
@@ -27,7 +27,7 @@ switch (1) {
     case 1:
         switch (2) {
             case 2:
-                break if (true): 2;
+                break 2 if (true);
         }
 
         // never executed

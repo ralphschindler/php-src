@@ -6,7 +6,7 @@ return if in function
 function divide($dividend, $divisor = null) {
     return if ($divisor === null); // return null void
     
-    return if ($divisor == 0): 0; // explicit return value
+    return 0 if ($divisor == 0); // explicit return value
     
     return $dividend / $divisor;
 }
